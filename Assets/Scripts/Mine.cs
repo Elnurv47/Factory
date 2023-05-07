@@ -26,25 +26,24 @@ public class Mine : PlaceableObject, IItemContainer
         }
     }
 
-    public bool TryGetStoredItemSO(out ItemSO itemSO)
-    {
-        if (storedItemAmount > 0)
-        {
-            itemSO = this.itemSO;
-            return true;
-        }
-
-        itemSO = null;
-        return false;
-    }
-
     public void Drop(Item droppedItem)
     {
-        throw new System.NotImplementedException();
+        Debug.Log("Mine.Drop()");
     }
 
-    public bool IsAvailable()
+    public bool HasItem()
     {
-        throw new System.NotImplementedException();
+        return storedItemAmount > 0;
+    }
+
+    public ItemSO GetStoredItemSO()
+    {
+        storedItemAmount--;
+        return itemSO;
+    }
+
+    private void OnMouseDown()
+    {
+        OnObjectClicked?.Invoke(itemSO, storedItemAmount);
     }
 }

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using UnityEngine;
 
 public class Grabber : PlaceableObject
@@ -22,8 +23,8 @@ public class Grabber : PlaceableObject
 
     private Item grabbedItem;
 
-    private IItemContainer grabStorage;
-    private ConveyorBelt dropConveyorBelt;
+    private IItemContainer grabContainer;
+    private IItemContainer dropContainer;
 
     public override void InvokeOnPlaced(Node placedOnNode)
     {
@@ -54,23 +55,30 @@ public class Grabber : PlaceableObject
 
                 break;
             case State.GrabbingItem:
-
-                // Check GetObject() before GetComponent() call
-                grabStorage = grabbingNode.GetObject().GetComponent<IItemContainer>();
-
-                if (grabStorage != null)
+                if (grabbingNode.GetObject() == null)
                 {
-                    if (grabStorage.TryGetStoredItemSO(out ItemSO storedItemSO))
-                    {
-                        GameObject grabbedItemObject = Spawner.Spawn(storedItemSO.Prefab, grabStorage.Position, Quaternion.identity);
-                        grabbedItem = grabbedItemObject.GetComponent<Item>();
-                        grabbedItem.ItemSO = storedItemSO;
-                        state = State.MovingItemToGrabber;
-                    }
+                    Debug.Log("No object found in grabbingNode!");
+                }
+
+                grabContainer = grabbingNode.GetObject().GetComponent<IItemContainer>();
+
+                if (grabContainer == null)
+                {
+                    Debug.Log("No grabbable object found in grabbingNode!");
+                }
+
+                if (grabContainer.HasItem())
+                {
+                    ItemSO storedItemSO = grabContainer.GetStoredItemSO();
+                    GameObject grabbedItemObject = Spawner.Spawn(storedItemSO.Prefab, grabContainer.Position, Quaternion.identity);
+                    grabbedItem = grabbedItemObject.GetComponent<Item>();
+                    grabbedItem.ItemSO = storedItemSO;
+                    state = State.MovingItemToGrabber;
                 }
 
                 break;
             case State.MovingItemToGrabber:
+                if (grabbedItem.IsMoving()) return;
 
                 grabbedItem.MoveTo(transform.position, onArrived: () =>
                 {
@@ -79,20 +87,28 @@ public class Grabber : PlaceableObject
 
                 break;
             case State.MovingToDropItem:
+                if (droppingNode.GetObject() == null)
+                {
+                    Debug.Log("No object found in droppingNode!");
+                }
 
-                dropConveyorBelt = droppingNode.GetObject().GetComponent<ConveyorBelt>();
+                dropContainer = droppingNode.GetObject().GetComponent<IItemContainer>();
 
-                if (dropConveyorBelt == null || !dropConveyorBelt.IsAvailable()) return;
+                if (dropContainer == null)
+                {
+                    Debug.Log("No droppable object found in droppingNode!");
+                }
+
                 if (grabbedItem.IsMoving()) return;
 
-                grabbedItem.MoveTo(dropConveyorBelt.transform.position, onArrived: () =>
+                grabbedItem.MoveTo(dropContainer.Position, onArrived: () =>
                 {
                     state = State.DroppingItem;
                 });
 
                 break;
             case State.DroppingItem:
-                dropConveyorBelt.Drop(grabbedItem);
+                dropContainer.Drop(grabbedItem);
                 grabbedItem.DestroySelf();
                 grabbedItem = null;
                 state = State.Cooldown;

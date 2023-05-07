@@ -12,8 +12,20 @@ public class Storage : PlaceableObject, IItemContainer
         base.InvokeOnPlaced(placedOnNode);
     }
 
-    public bool TryGetStoredItemSO(out ItemSO itemSO)
+    public void Drop(Item droppedItem)
     {
-        throw new System.NotImplementedException();
+        storedItemSO = droppedItem.ItemSO;
+        storedItemAmount++;
+    }
+
+    public bool HasItem()
+    {
+        return storedItemSO != null;
+    }
+
+    public ItemSO GetStoredItemSO()
+    {
+        storedItemAmount--;
+        return storedItemSO;
     }
 }

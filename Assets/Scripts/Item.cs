@@ -7,7 +7,7 @@ public class Item : MonoBehaviour
     private ItemSO itemSO;
     public ItemSO ItemSO { get => itemSO; set => itemSO = value; }
 
-    private float speed = 3f;
+    private float speed = 4f;
 
     private bool isMoving;
 
@@ -37,7 +37,9 @@ public class Item : MonoBehaviour
 
     public Item Copy()
     {
-        return Instantiate(this);
+        Item copy = Instantiate(this);
+        copy.ItemSO = ItemSO;
+        return copy;
     }
 
     public void DestroySelf()

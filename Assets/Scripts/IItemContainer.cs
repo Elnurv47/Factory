@@ -3,5 +3,8 @@
 public interface IItemContainer
 {
     Vector3 Position { get; }
-    bool TryGetStoredItemSO(out ItemSO itemSO);
+    void Drop(Item droppedItem);
+    bool HasItem();
+
+    ItemSO GetStoredItemSO();
 }

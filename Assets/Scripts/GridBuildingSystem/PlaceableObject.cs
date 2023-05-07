@@ -9,13 +9,13 @@ public class PlaceableObject : MonoBehaviour
     private const int ROTATIONDEGREE = 90;
 
     protected Node placedOnNode;
-    protected GridBuildingSystem gridBuildingSystem;
 
     [SerializeField] private int xSize;
     [SerializeField] private int ySize;
     [SerializeField] private Transform visualTransform;
 
     public Action<Direction.DirectionType> OnDirectionChanged;
+    public Action<ItemSO, int> OnObjectClicked;
 
     public virtual void Awake()
     {

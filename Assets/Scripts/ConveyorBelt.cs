@@ -47,21 +47,20 @@ public class ConveyorBelt : PlaceableObject, IItemContainer
                 facingConveyorBelt = facingNodeObject.GetComponent<ConveyorBelt>();
                 if (Direction.Type == Direction.OppositeDirection) return;
 
-                if (facingConveyorBelt == null || !facingConveyorBelt.IsAvailable()) return;
+                if (facingConveyorBelt == null || facingConveyorBelt.HasItem()) return;
 
                 if (holdItem == null) return;
 
                 state = State.MovingItem;
                 break;
             case State.MovingItem:
-                
-                if (!holdItem.IsMoving())
+
+                if (holdItem.IsMoving()) return;
+
+                holdItem.MoveTo(facingConveyorBelt.transform.position, onArrived: () =>
                 {
-                    holdItem.MoveTo(facingConveyorBelt.transform.position, onArrived: () =>
-                    {
-                        state = State.Moved;
-                    });
-                }
+                    state = State.Moved;
+                });
 
                 break;
             case State.Moved:
@@ -76,18 +75,17 @@ public class ConveyorBelt : PlaceableObject, IItemContainer
     public void Drop(Item droppedItem)
     {
         holdItem = droppedItem.Copy();
-        state = State.TryMoveNextConveyorBelt;
     }
 
-    public bool IsAvailable()
+    public bool HasItem()
     {
-        return holdItem == null;
+        return holdItem != null;
     }
 
-    public bool TryGetStoredItemSO(out ItemSO itemSO)
+    public ItemSO GetStoredItemSO()
     {
-        itemSO = holdItem.ItemSO;
-        if (itemSO == null) return true;
-        return false;
+        ItemSO itemSO = holdItem.ItemSO;
+        holdItem.DestroySelf();
+        return itemSO;
     }
 }
